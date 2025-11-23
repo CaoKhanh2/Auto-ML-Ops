@@ -1,0 +1,10 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+pydantic==2.9.0
+pandas==2.2.2
+numpy==2.0.2
+scikit-learn==1.5.2
+redis==5.1.0
+pyarrow==17.0.0
+confluent-kafka==2.4.0
+streamlit==1.41.0

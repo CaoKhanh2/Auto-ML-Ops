@@ -1,0 +1,22 @@
+[project]
+name = "predict-number"
+version = "0.1.0"
+description = "Realtime big data prediction system (Kafka + Faust + FastAPI)"
+requires-python = ">=3.12"
+dependencies = [
+    "faust==1.10.4",
+    "fastapi==0.115.0",
+    "uvicorn[standard]==0.30.0",
+    "pydantic==2.9.0",
+    "pandas==2.2.2",
+    "numpy==2.0.2",
+    "scikit-learn==1.5.2",
+    "redis==5.1.0",
+    "pyarrow==17.0.0",
+    "requests>=2.32.5",
+    "cryptography>=46.0.3",
+]
+
+[tool.uv]
+# Bật tính năng build lock file
+managed = true
