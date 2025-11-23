@@ -6,7 +6,8 @@ import numpy as np
 from core_model.features import build_feature_for_next_draw
 
 
-REGISTRY_PATH = Path("models/registry.json")
+# Resolve registry.json relative to project root to avoid cwd issues
+REGISTRY_PATH = Path(__file__).resolve().parents[2] / "models" / "registry.json"
 
 
 # ---------------------------
@@ -23,7 +24,8 @@ def load_models():
     reg = json.loads(REGISTRY_PATH.read_text())
 
     version = reg.get("current_version")
-    model_dir = Path(reg.get("path", f"models/{version}"))
+    raw_model_dir = Path(reg.get("path", f"models/{version}"))
+    model_dir = raw_model_dir if raw_model_dir.is_absolute() else REGISTRY_PATH.parent / raw_model_dir
 
     models = {}
 
@@ -42,7 +44,15 @@ def load_models():
     return models
 
 
-MODELS = load_models()
+_MODELS = None
+
+
+def get_models():
+    """Lazy-load model set to avoid import-time failures."""
+    global _MODELS
+    if _MODELS is None:
+        _MODELS = load_models()
+    return _MODELS
 
 
 # ---------------------------
@@ -56,8 +66,9 @@ def predict_from_features(x_new):
     x_new = np.array(x_new)
 
     preds = []
+    models = get_models()
     for pos in range(1, 7):
-        m = MODELS[f"n_{pos}"]
+        m = models[f"n_{pos}"]
         scaler = m["scaler"]
         model = m["model"]
 

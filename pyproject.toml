@@ -20,3 +20,9 @@ dependencies = [
 [tool.uv]
 # Bật tính năng build lock file
 managed = true
+
+[project.scripts]
+api = "cli:run_api"
+train = "core_model.train:main"
+predict_next = "core_model.inference_next:main"
+build_features = "utils.build_features_parquet:main"

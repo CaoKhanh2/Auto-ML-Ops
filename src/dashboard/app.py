@@ -24,6 +24,17 @@ st.title("Prediction Monitoring Dashboard")
 redis_client = get_redis()
 registry = get_current_version_meta()
 current_version = registry.get("current_version")
+fallback_from = registry.get("fallback_from")
+
+if current_version is None:
+    st.warning(
+        "Chưa có model nào trong registry. Hãy chạy script huấn luyện để tạo version mới."
+    )
+elif fallback_from:
+    st.info(
+        f"current_version trong registry không hợp lệ ({fallback_from}); "
+        f"đang dùng tạm version mới nhất: {current_version}."
+    )
 
 
 # =========================

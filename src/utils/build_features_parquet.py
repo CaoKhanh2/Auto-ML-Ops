@@ -1,14 +1,22 @@
 import os
+import sys
 import json
 import numpy as np
 import pandas as pd
 from pathlib import Path
 
+# Make `src/` importable when this file is executed directly
+SRC_DIR = Path(__file__).resolve().parents[1]
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+PROJECT_ROOT = SRC_DIR.parent
+
 from core_model.data_prep import load_multi_hot_data
-from core_model.features import build_advanced_features_from_multi_hot
+from core_model.features import compute_recency_features
 
 
-LAKE_DIR = Path("data/lake/features")
+LAKE_DIR = PROJECT_ROOT / "data/lake/features"
 LAKE_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -25,15 +33,16 @@ def build_all_features(df, y_all):
     T = len(df)
     all_rows = []
 
+    # Tính recency một lần để tránh O(T^2)
+    recency_matrix = compute_recency_features(y_all)
+
     for t in range(T):
         # --- Frequency ---
         f30 = safe_freq_window(y_all, t, 30)
         f60 = safe_freq_window(y_all, t, 60)
 
-        # --- Recency: dùng hàm recency chuẩn ---
-        # tái sử dụng build_advanced_features để đảm bảo đồng bộ
-        X_full, _, _ = build_advanced_features_from_multi_hot(df, y_all)
-        rec = X_full[t][-48:-3]  # 45 recency features cuối
+        # --- Recency ---
+        rec = recency_matrix[t]
 
         # --- Time ---
         date_t = pd.to_datetime(df.iloc[t]["date"])
@@ -47,7 +56,7 @@ def build_all_features(df, y_all):
 
 def main():
     print("Loading multi_hot_matrix.csv ...")
-    df, y_all, y_cols = load_multi_hot_data("data/multi_hot_matrix.csv")
+    df, y_all, y_cols = load_multi_hot_data(PROJECT_ROOT / "data/multi_hot_matrix.csv")
 
     print("Building features matrix ...")
     X = build_all_features(df, y_all)

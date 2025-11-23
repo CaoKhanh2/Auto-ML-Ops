@@ -1,12 +1,20 @@
 from pathlib import Path
 import json
 import os
+import sys
 from typing import Dict, Any, List
 
-from data import getData
+# Allow running directly: python src/ingestion/scraper_job.py
+SRC_DIR = Path(__file__).resolve().parents[1]
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+PROJECT_ROOT = SRC_DIR.parent
+
+from ingestion import getData
 from storage.log_parquet import append_log
 
-CONFIG_PATH = Path("data/scraper_config.json")
+CONFIG_PATH = PROJECT_ROOT / "data/scraper_config.json"
 
 
 def load_scraper_config():

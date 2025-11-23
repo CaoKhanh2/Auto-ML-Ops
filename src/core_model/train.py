@@ -1,8 +1,18 @@
+import argparse
 import os
+import sys
 import json
 import joblib
 from pathlib import Path
 from datetime import datetime
+
+# Allow running this file directly (python src/core_model/train.py ...)
+# by injecting the project src/ directory into sys.path.
+SRC_DIR = Path(__file__).resolve().parents[1]
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+PROJECT_ROOT = SRC_DIR.parent
 
 from core_model.data_prep import load_multi_hot_data
 from core_model.features import build_advanced_features_from_multi_hot
@@ -26,6 +36,10 @@ def train_logistic_for_position(X, Y):
 
 def train_and_save_model(csv_path, output_dir="models"):
     print("Loading data...")
+    csv_path = Path(csv_path)
+    if not csv_path.is_absolute():
+        csv_path = PROJECT_ROOT / csv_path
+
     df, y_all, y_cols = load_multi_hot_data(csv_path)
 
     print("Building features...")
@@ -38,7 +52,11 @@ def train_and_save_model(csv_path, output_dir="models"):
     print("Meta rows:", meta_df.shape)
     print("Targets:", Y_multi.shape)
 
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir = Path(output_dir)
+    if not output_dir.is_absolute():
+        output_dir = PROJECT_ROOT / output_dir
+
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     model_set = {}
 
@@ -81,12 +99,13 @@ def train_and_save_model(csv_path, output_dir="models"):
     print(f"\nDONE: saved models → {model_dir}")
 
 
+def main(argv=None) -> None:
+    parser = argparse.ArgumentParser(description="Train lottery prediction models and update the registry.")
+    parser.add_argument("csv_path", help="Path to the multi-hot matrix CSV file", nargs="?", default="data/multi_hot_matrix.csv")
+    args = parser.parse_args(argv)
+
+    train_and_save_model(args.csv_path)
+
+
 if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) < 2:
-        print("Usage: python -m core_model.train <csv_path>")
-        exit(1)
-
-    csv = sys.argv[1]
-    train_and_save_model(csv)
+    main()

@@ -1,13 +1,19 @@
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from core_model.inference import predict_from_features, predict_next_draw
-from core_model.data_prep import load_multi_hot_data
-
 import redis
 import json
 
+from core_model.inference import predict_from_features, predict_next_draw
+from core_model.data_prep import load_multi_hot_data
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_DATA_PATH = PROJECT_ROOT / "data" / "multi_hot_matrix.csv"
+
 app = FastAPI(title="Predict Number API")
 rds = redis.Redis(host="redis", port=6379, db=0)
+
 
 class PredictRequest(BaseModel):
     features: list[float]
@@ -29,7 +35,10 @@ def predict(req: PredictRequest):
 
 @app.get("/predict_next_draw")
 def api_predict_next_draw():
-    df, y_all, _ = load_multi_hot_data("data/multi_hot_matrix.csv")
+    if not DEFAULT_DATA_PATH.exists():
+        raise HTTPException(status_code=500, detail=f"Missing data file: {DEFAULT_DATA_PATH}")
+
+    df, y_all, _ = load_multi_hot_data(DEFAULT_DATA_PATH)
     result = predict_next_draw(df, y_all)
     return {"prediction": result}
 

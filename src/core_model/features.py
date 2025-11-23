@@ -44,7 +44,7 @@ def compute_recency_features(y_all, max_recency=50):
 # 2. FEATURE FOR NEXT DRAW
 # ============================================================
 
-def build_feature_for_next_draw(df, y_all, windows=(10, 20, 50), max_recency=50):
+def build_feature_for_next_draw(df, y_all, windows=(30, 60), max_recency=50):
     """
     Xây feature vector theo đúng logic training, cho lần quay T+1.
     """
@@ -80,11 +80,11 @@ def build_feature_for_next_draw(df, y_all, windows=(10, 20, 50), max_recency=50)
 def build_advanced_features_from_multi_hot(df, y_all, windows=(30, 60), max_recency=50):
     """
     Build toàn bộ feature cho 100% lịch sử.
-    
+
     Output:
         X: (T, feature_dim)
         y_all: (T, 45)
-        y_cols: ["n_1", ..., "n_45"]
+        meta_df: pandas DataFrame (gồm cột gốc), align với X
     """
 
     T, N = y_all.shape
@@ -96,7 +96,9 @@ def build_advanced_features_from_multi_hot(df, y_all, windows=(30, 60), max_rece
         # frequency window at time t
         freq_t = []
         for w in windows:
-            if t - w < 0:
+            if t <= 0:
+                freq_t.append(np.zeros(N))
+            elif t - w < 0:
                 freq_t.append(y_all[:t].mean(axis=0))
             else:
                 freq_t.append(y_all[t-w:t].mean(axis=0))
@@ -111,5 +113,6 @@ def build_advanced_features_from_multi_hot(df, y_all, windows=(30, 60), max_rece
 
     X = np.array(X, dtype=float)
 
-    y_cols = [f"n_{i}" for i in range(1, 46)]
-    return X, y_all, y_cols
+    # meta_df giữ nguyên các cột gốc (n_1..n_6) để dùng làm nhãn
+    meta_df = df.reset_index(drop=True).copy()
+    return X, y_all, meta_df

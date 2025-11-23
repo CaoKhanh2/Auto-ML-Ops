@@ -40,21 +40,32 @@ def update_current_version(version: str, model_path: str):
     save_registry(reg)
 
 
-def get_current_version_meta():
+def get_current_version_meta(allow_missing: bool = True):
+    """Trả về metadata của version hiện tại.
+
+    Nếu ``current_version`` không tồn tại hoặc không có trong ``versions``:
+    - Nếu vẫn còn version khác, tự động fallback sang version mới nhất (sorted)
+      và cập nhật registry để tránh lỗi lặp lại.
+    - Nếu không có version nào và ``allow_missing=True`` (mặc định),
+      trả về dict rỗng dạng {"current_version": None, "path": None} thay vì
+      raise exception (giúp dashboard / consumer không bị crash khi khởi động).
     """
-    Trả về metadata của version hiện tại.
-    """
+
     reg = load_registry()
-
+    versions = reg.get("versions", {}) or {}
     cur = reg.get("current_version")
-    if not cur:
-        raise ValueError("No current_version found in registry.json")
 
-    versions = reg.get("versions", {})
-    if cur not in versions:
-        raise KeyError(f"Version '{cur}' không tồn tại trong registry.")
+    if cur and cur in versions:
+        return {"current_version": cur, "path": versions[cur]["path"]}
 
-    return {
-        "current_version": cur,
-        "path": versions[cur]["path"]
-    }
+    # Nếu current_version không hợp lệ nhưng registry có versions, fallback sang version mới nhất
+    if versions:
+        latest = sorted(versions.keys())[-1]
+        reg["current_version"] = latest
+        save_registry(reg)
+        return {"current_version": latest, "path": versions[latest]["path"], "fallback_from": cur}
+
+    if allow_missing:
+        return {"current_version": None, "path": None}
+
+    raise ValueError("No current_version found and registry is empty")
