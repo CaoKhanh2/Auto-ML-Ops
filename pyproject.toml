@@ -26,3 +26,7 @@ api = "cli:run_api"
 train = "core_model.train:main"
 predict_next = "core_model.inference_next:main"
 build_features = "utils.build_features_parquet:main"
+# Windows users sometimes accidentally run `--script build\_features` (with a
+# backslash) which resolves to a non-existent path. Provide a hyphenated alias
+# so `uv run build-features` works without underscores/backslashes.
+build-features = "utils.build_features_parquet:main"

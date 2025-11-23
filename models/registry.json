@@ -1,5 +1,13 @@
 {
-    "current_version": "v20251122_191637",
-    "path": "models/v20251122_191637",
-    "positions": ["n_1", "n_2", "n_3", "n_4", "n_5", "n_6"]
+    "current_version": "v20251123_181656",
+    "positions": [
+        "n_1",
+        "n_2",
+        "n_3",
+        "n_4",
+        "n_5",
+        "n_6"
+    ],
+    "path": "E:\\project\\models\\v20251123_181656",
+    "created_at": "2025-11-23T18:16:56.450025"
 }
