@@ -41,12 +41,16 @@ pip install -r requirements.txt
 - Các script tự chuyển đổi đường dẫn tương đối sang tuyệt đối nên có thể chạy từ thư mục gốc repo.
 
 ## 5. Huấn luyện mô hình & tạo version mới
-Dùng script đã khai báo trong `pyproject.toml`:
+Chạy từ thư mục gốc repo để `uv` tìm thấy `pyproject.toml`:
 ```bash
-uv run train                           # chạy bằng uv (ưu tiên)
-# hoặc nếu cần fallback rõ ràng:
+# Cách 1: uv run --script (ổn định nhất trên Windows)
+uv run --script train
+
+# Cách 2: uv run (nếu bản uv hỗ trợ gọi trực tiếp script name)
+uv run train
+
+# Fallback rõ ràng nếu vẫn báo "program not found"
 uv run -- python src/core_model/train.py data/multi_hot_matrix.csv
-# hoặc chỉ dùng Python thuần:
 python src/core_model/train.py data/multi_hot_matrix.csv
 ```
 Script sẽ:
@@ -57,35 +61,47 @@ Script sẽ:
 
 ## 6. Dự đoán batch kỳ quay tiếp theo
 ```bash
-# Ưu tiên (dùng entrypoint đã khai báo trong pyproject)
+# Ưu tiên: uv với --script
+uv run --script predict_next
+
+# Hoặc (nếu bản uv hỗ trợ):
 uv run predict_next
 
-# Nếu gặp thông báo "program not found" trên một số bản uv/Windows, dùng:
+# Fallback
 uv run -- python src/core_model/inference_next.py --data data/multi_hot_matrix.csv --output data/output/next_prediction.json
-
-# Hoặc chạy trực tiếp bằng Python
 python src/core_model/inference_next.py --data data/multi_hot_matrix.csv --output data/output/next_prediction.json
 ```
 Kết quả sẽ được in ra console và lưu thành JSON tại `data/output/next_prediction.json` (tạo thư mục nếu chưa có).
 
 ## 7. Xây dựng đặc trưng từ data lake (tuỳ chọn)
 ```bash
-# Cách khuyến nghị (không dùng backslash trước dấu gạch dưới):
-uv run build_features
+# Ổn định nhất (uv run --script)
+uv run --script build_features
+uv run --script build-features
 
-# Alias không có gạch dưới (tránh lỗi gõ nhầm `build\_features` trên Windows):
+# Nếu uv hỗ trợ gọi trực tiếp
+uv run build_features
 uv run build-features
 
-# Fallback khi uv báo "program not found" hoặc gặp lỗi đường dẫn:
+# Fallback Windows khi uv không nhận script name
 python build_features.py
 python src/utils/build_features_parquet.py
+
+# Hoặc chạy file batch (Windows) đi kèm
+build_features.bat
+build-features.bat
 ```
 Script đọc data lake và tạo các file Parquet đặc trưng phục vụ huấn luyện/batch.
 
 ## 8. Chạy API FastAPI (cục bộ)
 ```bash
+# Ổn định: dùng uv run --script
+uv run --script api
+
+# Nếu bản uv hỗ trợ gọi trực tiếp
 uv run api
-# hoặc
+
+# Fallback
 uvicorn src.api.app:app --reload --port 8000
 ```
 Các endpoint chính:
@@ -116,6 +132,7 @@ Luồng mặc định:
 - **Thiếu file dữ liệu**: chắc chắn `data/multi_hot_matrix.csv` tồn tại; API `/predict_next_draw` sẽ báo lỗi 500 nếu thiếu.
 - **Registry trống/thiếu version**: chạy lại bước huấn luyện để tạo `models/registry.json` và version mới.
 - **Path trên Windows**: ưu tiên chạy từ thư mục gốc repo và dùng `uv run --script ...` để tránh lỗi PYTHONPATH.
+- ** Nếu Airflow chưa hiển thị DAG**: docker exec -d airflow airflow scheduler để khởi động scheduler.
 
 ## 11. Thành phần bổ trợ (tham khảo)
 - **Streaming/Faust**: `src/streaming/consumer_worker.py`, `src/streaming/faust_worker.py` xử lý message Kafka và suy luận thời gian thực.

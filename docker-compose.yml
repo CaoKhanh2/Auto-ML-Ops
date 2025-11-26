@@ -68,30 +68,22 @@ services:
       - bigdata-net
 
   airflow:
-    image: apache/airflow:2.10.2
+    build:
+      context: .                      # Quan trọng: Context là root để thấy requirements.txt
+      dockerfile: airflow/Dockerfile.airflow  # Đường dẫn tới file Dockerfile mới
     container_name: airflow
     environment:
       AIRFLOW__CORE__EXECUTOR: SequentialExecutor
       AIRFLOW__CORE__FERNET_KEY: "kx1JAY9FV_NfQFQKDR_pSP-L1tNR1S2iUlkUhFmg6zU="
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      PROJECT_DIR: /app
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
-      - ./:/opt/project
-    command: >
-      bash -c "
-        airflow db migrate &&
-        airflow users create
-          --username admin
-          --password admin
-          --role Admin
-          --firstname Admin
-          --lastname User
-          --email admin@example.com || true &&
-        exec airflow webserver
-      "
+      - ./:/app
+    command: bash -c "airflow db migrate && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true && airflow scheduler & exec airflow webserver"
     ports:
       - "8080:8080"
     networks:

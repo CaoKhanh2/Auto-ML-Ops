@@ -11,3 +11,12 @@ wheels/
 
 # Data files
 *.pkl
+*.csv
+*.h5
+*.json
+
+
+#LOG
+logs/
+*.log
+

@@ -15,6 +15,7 @@ dependencies = [
     "pyarrow==17.0.0",
     "requests>=2.32.5",
     "cryptography>=46.0.3",
+    "kafka-python==1.4.7",
 ]
 
 [tool.uv]
