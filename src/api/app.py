@@ -1,8 +1,13 @@
 from pathlib import Path
+import sys
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import redis
 import json
+
+SRC_DIR = Path(__file__).resolve().parents[1]
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 from core_model.inference import predict_from_features, predict_next_draw
 from core_model.data_prep import load_multi_hot_data

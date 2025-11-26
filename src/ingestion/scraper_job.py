@@ -1,7 +1,7 @@
-from pathlib import Path
 import json
 import os
 import sys
+from pathlib import Path
 from typing import Dict, Any, List
 
 # Allow running directly: python src/ingestion/scraper_job.py

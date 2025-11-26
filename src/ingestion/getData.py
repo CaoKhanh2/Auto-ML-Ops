@@ -1,9 +1,8 @@
-"""Simple offline scraper placeholder.
+"""Simple offline scraper stub to slice the historical CSV by draw range.
 
-This script emulates data ingestion by reading the existing
-``data/multi_hot_matrix.csv`` file and exporting the requested slice to
-CSV/Excel. It keeps the Airflow DAG and scraper job runnable even when a
-real network scraper is unavailable.
+It allows the Airflow DAG and scraper job to keep running even without a
+real network scraper by slicing the local historical file and exporting to
+CSV/Excel.
 """
 
 import argparse

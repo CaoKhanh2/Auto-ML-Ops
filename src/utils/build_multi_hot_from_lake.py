@@ -1,8 +1,7 @@
-"""
-utils.build_multi_hot_from_lake
+"""Build multi_hot_matrix.csv by merging all parquet files in the data lake.
 
-Đọc toàn bộ Parquet trong Data Lake (partition by year/month/day),
-hợp nhất thành lịch sử dữ liệu và xây lại multi_hot_matrix.csv.
+Đọc toàn bộ Parquet trong Data Lake (partition by year/month/day), hợp nhất
+thành lịch sử dữ liệu và xây lại multi_hot_matrix.csv.
 
 Output: data/multi_hot_matrix.csv
 """
